@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace Terrain;
 
 [Tool]
+[GlobalClass]
 public partial class DrawTerrain : CompositorEffect
 {
     [Export]
@@ -30,7 +31,7 @@ public partial class DrawTerrain : CompositorEffect
     [Export(PropertyHint.Range, "1,32")]
     public int OctaveCount { get; set; } = 10;
 
-    [ExportGroup("OOctave Settings")]
+    [ExportGroup("Octave Settings")]
     [Export(PropertyHint.Range, "-180.0,180.0")]
     public float Rotation { get; set; } = 30.0f;
     [Export]
@@ -155,7 +156,6 @@ public partial class DrawTerrain : CompositorEffect
 
         GD.Print($"Triangle Count: {indexBuffer.Count / 3}");
 
-        // TODO
         float[] vertexBufferArr = [.. vertexBuffer];
         byte[] vertexBufferBytes = new byte[vertexBufferArr.Length * sizeof(float)];
         Buffer.BlockCopy(vertexBufferArr, 0, vertexBufferBytes, 0, vertexBufferBytes.Length);
@@ -185,16 +185,15 @@ public partial class DrawTerrain : CompositorEffect
         VertexFormat = RenderingDevice.VertexFormatCreate(vertexAttrs);
         PVertexArray = RenderingDevice.VertexArrayCreate((uint)(vertexBuffer.Count / STRIDE), VertexFormat, vertexBuffers);
 
-        // TODO
         int[] indexBufferArr = [.. indexBuffer];
         byte[] indexBufferBytes = new byte[indexBufferArr.Length * sizeof(int)];
         Buffer.BlockCopy(indexBufferArr, 0, indexBufferBytes, 0, indexBufferBytes.Length);
-        PIndexBuffer = RenderingDevice.IndexBufferCreate((uint)indexBuffer.Count, RenderingDevice.IndexBufferFormat.Uint32, indexBufferBytes);
+        PIndexBuffer = RenderingDevice.IndexBufferCreate((uint)indexBufferArr.Length, RenderingDevice.IndexBufferFormat.Uint32, indexBufferBytes);
 
         int[] wireIndexBufferArr = [.. wireIndexBuffer];
         byte[] wireIndexBufferBytes = new byte[wireIndexBufferArr.Length * sizeof(int)];
         Buffer.BlockCopy(wireIndexBufferArr, 0, wireIndexBufferBytes, 0, wireIndexBufferBytes.Length);
-        PWireIndexBuffer = RenderingDevice.IndexBufferCreate((uint)wireIndexBuffer.Count, RenderingDevice.IndexBufferFormat.Uint32, wireIndexBufferBytes);
+        PWireIndexBuffer = RenderingDevice.IndexBufferCreate((uint)wireIndexBufferArr.Length, RenderingDevice.IndexBufferFormat.Uint32, wireIndexBufferBytes);
 
         PIndexArray = RenderingDevice.IndexArrayCreate(PIndexBuffer, 0, (uint)indexBuffer.Count);
         PWireIndexArray = RenderingDevice.IndexArrayCreate(PWireIndexBuffer, 0, (uint)wireIndexBuffer.Count);
@@ -352,7 +351,7 @@ public partial class DrawTerrain : CompositorEffect
 
         RenderingDevice.DrawCommandBeginLabel("Terrain Mesh", new(1f, 1f, 1f, 1f));
 
-        var drawList = RenderingDevice.DrawListBegin(PFramebuffer, RenderingDevice.DrawFlags.IgnoreColorAll, ClearColors, 1.0f, 0, new(), 0);
+        var drawList = RenderingDevice.DrawListBegin(PFramebuffer, RenderingDevice.DrawFlags.IgnoreAll, ClearColors, 1.0f, 0, new(), 0);
 
         RenderingDevice.DrawListBindRenderPipeline(drawList, Wireframe ? PWireRenderPipeline : PRenderPipeline);
         RenderingDevice.DrawListBindVertexArray(drawList, PVertexArray);
